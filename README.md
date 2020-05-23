@@ -7,11 +7,11 @@ In this example we deploy the NGINX or NGINX Plus Ingress Controller and a simpl
 
 The default Ingress Controller images don’t include the OpenTracing module required for this example. 
 
-### Step1: Download the Nginx ingress offical repo 
+### Download the Nginx ingress offical repo 
 ```
 git clone https://github.com/nginxinc/kubernetes-ingress/tree/master/build 
 ```
-### Step2: Create docker image by using this repo
+### Create docker image by using this repo
 
 ```
 $ make clean
