@@ -106,3 +106,5 @@ curl --resolve nginx.kube.com:$IC_HTTPS_PORT:$IC_IP http://nginx.kube.com
    kubectl port-forward <YOUR_JAEGER_POD> 16686:16686
    ``` 
 1. Open Jaeger dashboard in your browser available via http://localhost:16686. Search for the traces by specifying the name of the service to `nginx-ingress` and clicking `Find Traces`. You will see:
+
+![Jaeger UI](./jaeger-ui.png)
