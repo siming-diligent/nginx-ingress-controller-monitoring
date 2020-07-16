@@ -1,4 +1,5 @@
 
+
 # Nginx Ingress Controller Opentracing Support
 
 In this example we deploy the NGINX or NGINX Plus Ingress Controller and a simple web application. Then we enable OpenTracing and use a tracer (Jaeger) for tracing the requests that go through NGINX or NGINX Plus to the web application.
@@ -78,7 +79,8 @@ curl --resolve nginx.kube.com:$IC_HTTPS_PORT:$IC_IP http://nginx.kube.com
 
 
 
-## Step 3 - Deploy a Tracer
+## Step 3 - Deploy a Tracer (Or jump to Step6) 
+PS: There are 2 ways to do this.  if you want to keep it simple, just contiune reading by using all-in-one Jaeger solution
 
 1. Use the [all-in-one dev template](https://github.com/jaegertracing/jaeger-kubernetes#development-setup) to deploy Jaeger in the default namespace. **Note:** This template should be only used for development or testing.
    ```
@@ -92,6 +94,8 @@ curl --resolve nginx.kube.com:$IC_HTTPS_PORT:$IC_IP http://nginx.kube.com
    NAME                      READY     STATUS   
    jaeger-6c996dbcd9-j5jzf   1/1       Running
    ```
+
+PS:  you need to double check your Nginx-ingress configmap file, to make sure the "localAgentHostPost" is pointing to all-in-one Jeager Agent service  
 
 ## Step 4 - Enable OpenTracing
 1. Update the ConfigMap with the keys required to load OpenTracing module with Jaeger and enable  OpenTracing for all Ingress resources.
@@ -113,3 +117,46 @@ curl --resolve nginx.kube.com:$IC_HTTPS_PORT:$IC_IP http://nginx.kube.com
 1. Open Jaeger dashboard in your browser available via http://localhost:16686. Search for the traces by specifying the name of the service to `nginx-ingress` and clicking `Find Traces`. You will see:
 
 ![Jaeger UI](./jaeger-ui.png)
+
+
+
+## Step 6 - Using ELK APM
+
+1. Make sure your Nginx ingress controller pod is deployed successfuly, jaeger-agent sidecar is up and running in this pod as well, like below 
+```nginx-ingress-ccddcc4d9-ht4qr   2/2     Running   0          35h```
+
+2. install Elastic APM server and configure the ECK.  ( this part I will skip here. for more details you can check this URL: [https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html)
+3. Once your APM server is ready, you can start to forward the Jaeger-agent data to APM server. 
+    This configuration is controlled by configmap of jaegure-configuration, below is an example:
+
+```
+swang@NYK-MAC-14191 ~/.kube$ k get configmaps jaeger-configuration -o yaml
+apiVersion: v1
+data:
+  agent: |
+    collector:
+      host-port: "apm-server-quickstart-apm-http:14268"
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"agent":"collector:\n  host-port: \"simple-prod-collector.observability.svc.cluster.local:14267\"\n"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app":"jaeger","app.kubernetes.io/name":"jaeger"},"name":"jaeger-configuration","namespace":"default"}}
+  creationTimestamp: "2020-06-14T03:36:42Z"
+  labels:
+    app: jaeger
+    app.kubernetes.io/name: jaeger
+  name: jaeger-configuration
+  namespace: default
+  resourceVersion: "80292584"
+  selfLink: /api/v1/namespaces/default/configmaps/jaeger-configuration
+  uid: c41e4d86-8c6d-4582-9210-5e364b8045fe
+  ```
+
+4. Then if you trigger come traffic, you will see something like below shows up in Kibana
+![ELK_UI](./elk-ui.png)
+  
+  
+  
+
+     
+
