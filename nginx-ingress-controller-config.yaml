@@ -14,7 +14,7 @@ data:
                 "param": 1
             },
             "reporter": {
-                "localAgentHostPort": "jaeger-agent.default.svc.cluster.local:6831"
+                "localAgentHostPort": "localhost:6831"
             }
         }
 
